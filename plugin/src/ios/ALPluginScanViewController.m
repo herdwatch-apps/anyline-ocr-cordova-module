@@ -30,7 +30,6 @@
 
 @property (nonatomic, strong) NSMutableArray<NSDictionary *> *detectedBarcodes;
 
-@property (nonatomic) NSTimeInterval scanDelay;
 
 @end
 
@@ -50,7 +49,6 @@
         self.quality = 100;
         self.nativeBarcodeEnabled = NO;
         self.cropAndTransformErrorMessage = @"";
-        self.scanDelay = 0;
     }
     return self;
 }
@@ -87,33 +85,6 @@
         return;
     }
     
-    if ([self.scanView.scanViewPlugin isKindOfClass:[ALOCRScanViewPlugin class]]) {
-        NSString *customCmdFile = [self.anylineConfig valueForKeyPath:@"viewPlugin.plugin.ocrPlugin.customCmdFile"];
-        
-        if (customCmdFile) {
-            //            ALOCRConfig *ocrConfig = (ALOCRConfig *)self.anylineConfig;
-            //            [ocrConfig setCustomCmdFilePath:customCmdFile];
-            //            self.anylineConfig = (NSDictionary *)ocrConfig;
-            NSString *fileName = [self.anylineConfig valueForKeyPath:@"viewPlugin.plugin.ocrPlugin.customCmdFile"];
-            if (fileName) {
-                NSString *cmdFileDirectoryPath = [fileName stringByDeletingLastPathComponent];
-                NSString *pathResource = [[fileName lastPathComponent] stringByDeletingPathExtension];
-                NSString *filePath =  [[NSBundle mainBundle] pathForResource:pathResource ofType:@"ale" inDirectory:cmdFileDirectoryPath];
-                
-                ALOCRConfig *ocrConfig = ((ALOCRScanViewPlugin *)self.scanView.scanViewPlugin).ocrScanPlugin.ocrConfig;
-                [ocrConfig setCustomCmdFilePath:filePath];
-                [((ALOCRScanViewPlugin *)self.scanView.scanViewPlugin).ocrScanPlugin setOCRConfig:ocrConfig error:nil];
-            }
-            
-        }
-    }
-    
-    double delayTime = [[self.anylineConfig valueForKeyPath:@"viewPlugin.plugin.delayStartScanTime"] doubleValue];
-    if (delayTime > 0) {
-        self.scanDelay = delayTime;
-    }
-    
-    
     [self.scanView startCamera];
     
     [self.view addSubview:self.scanView];
@@ -124,8 +95,6 @@
                                                              scanMode:((ALMeterScanViewPlugin *)self.scanView.scanViewPlugin).meterScanPlugin.scanMode];
         [(ALMeterScanViewPlugin *)self.scanView.scanViewPlugin addScanViewPluginDelegate:self];
     }
-    
-    
     
     if (self.nativeBarcodeEnabled) {
         error = nil;
@@ -151,15 +120,13 @@
     
     [UIApplication sharedApplication].idleTimerDisabled = YES;
     
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_MSEC*self.scanDelay), dispatch_get_current_queue(), ^{
-        NSError *error;
-        BOOL success = [self.scanView.scanViewPlugin startAndReturnError:&error];
-        if(!success) {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Could not start scanning" message:error.localizedDescription delegate:self cancelButtonTitle:@"Ok" otherButtonTitles:nil];
-            [alert show];
-        }
-        
-    });
+    NSError *error;
+    
+    BOOL success = [self.scanView.scanViewPlugin startAndReturnError:&error];
+    if(!success) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Could not start scanning" message:error.localizedDescription delegate:self cancelButtonTitle:@"Ok" otherButtonTitles:nil];
+        [alert show];
+    }
     
     if(self.cordovaConfig.segmentModes){
         self.segment.frame = CGRectMake(self.scanView.scanViewPlugin.cutoutRect.origin.x + self.cordovaConfig.segmentXPositionOffset/2,
@@ -173,6 +140,8 @@
 
 - (void)viewDidDisappear:(BOOL)animated {
     [UIApplication sharedApplication].idleTimerDisabled = NO;
+    [self.scanView.scanViewPlugin stopAndReturnError:nil];
+    [self.scanView stopCamera];
 }
 
 - (BOOL)shouldAutorotate {

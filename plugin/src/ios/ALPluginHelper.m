@@ -388,66 +388,122 @@
     
     if ([scanResult.result isKindOfClass:[ALMRZIdentification class]]) {
         ALMRZIdentification *mrzIdentification = (ALMRZIdentification *)scanResult.result;
+        NSMutableArray<NSString *> *keys=[@[
+                                            @"surname",
+                                            @"givenNames",
+                                            @"dateOfBirth",
+                                            @"dateOfExpiry",
+                                            @"documentNumber",
+                                            @"documentType",
+                                            @"issuingCountryCode",
+                                            @"nationalityCountryCode",
+                                            @"sex",
+                                            @"personalNumber",
+                                            @"optionalData",
+                                            @"mrzString",
+                                            @"checkDigitDateOfExpiry",
+                                            @"checkDigitDocumentNumber",
+                                            @"checkDigitDateOfBirth",
+                                            @"checkDigitFinal",
+                                            @"checkDigitPersonalNumber",
+                                            @"allCheckDigitsValid"
+                                            ] mutableCopy];
+        dictResult = [[scanResult.result dictionaryWithValuesForKeys:keys] mutableCopy];
+        //there's no confidence for allCheckDigitsValid
+        [keys removeObject:@"allCheckDigitsValid"];
+        NSMutableDictionary *confidences=[[[scanResult.result fieldConfidences]
+                                           dictionaryWithValuesForKeys:keys] mutableCopy];
         
-        dictResult = [[scanResult.result dictionaryWithValuesForKeys:@[@"documentType",
-                                                                       @"nationalityCountryCode",
-                                                                       @"issuingCountryCode",
-                                                                       @"issuingDate",
-                                                                       @"surNames",
-                                                                       @"givenNames",
-                                                                       @"documentNumber",
-                                                                       @"checkdigitNumber",
-                                                                       @"dayOfBirth",
-                                                                       @"checkdigitDayOfBirth",
-                                                                       @"sex",
-                                                                       @"expirationDate",
-                                                                       @"checkdigitExpirationDate",
-                                                                       @"personalNumber",
-                                                                       @"checkDigitPersonalNumber",
-                                                                       @"checkdigitFinal"]] mutableCopy];
-        
-        [dictResult setValue:[ALPluginHelper stringForDate:[scanResult.result issuingDateObject]] forKey:@"issuingDateObject"];
-        [dictResult setValue:@(scanResult.allCheckDigitsValid) forKey:@"allCheckDigitsValid"];
-        
-        if ([[scanResult.result documentType] isEqualToString:@"ID"] && [[scanResult.result issuingCountryCode] isEqualToString:@"D"]) {
-            [dictResult setValue:mrzIdentification.address forKey:@"address"];
+        //VIZ Fields
+        if ([mrzIdentification vizGivenNames] && [mrzIdentification vizGivenNames].length > 0) {
+            [dictResult setValue:mrzIdentification.vizGivenNames forKey:@"vizGivenNames"];
         }
+        [confidences setValue:@(mrzIdentification.fieldConfidences.vizGivenNames) forKey:@"vizGivenNames"];
+        
+        if ([mrzIdentification vizSurname] && [mrzIdentification vizSurname].length > 0) {
+            [dictResult setValue:mrzIdentification.vizSurname forKey:@"vizSurname"];
+        }
+        [confidences setValue:@(mrzIdentification.fieldConfidences.vizSurname) forKey:@"vizSurname"];
+        
+        if ([mrzIdentification vizAddress] && [mrzIdentification vizAddress].length > 0) {
+            [dictResult setValue:mrzIdentification.vizAddress forKey:@"vizAddress"];
+        }
+        [confidences setValue:@(mrzIdentification.fieldConfidences.vizAddress) forKey:@"vizAddress"];
+        
+        if ([mrzIdentification vizDateOfBirth] && [mrzIdentification vizDateOfBirth].length > 0) {
+            [dictResult setValue:mrzIdentification.vizDateOfBirth forKey:@"vizDateOfBirth"];
+            [dictResult setValue:[ALPluginHelper stringForDate:mrzIdentification.vizDateOfBirthObject] forKey:@"vizDateOfBirthObject"];
+        }
+        [confidences setValue:@(mrzIdentification.fieldConfidences.vizDateOfBirth) forKey:@"vizDateOfBirth"];
+        
+        if ([mrzIdentification vizDateOfExpiry] && [mrzIdentification vizDateOfExpiry].length > 0) {
+            [dictResult setValue:mrzIdentification.vizDateOfExpiry forKey:@"vizDateOfExpiry"];
+            [dictResult setValue:[ALPluginHelper stringForDate:mrzIdentification.vizDateOfExpiryObject] forKey:@"vizDateOfExpiryObject"];
+        }
+        [confidences setValue:@(mrzIdentification.fieldConfidences.vizDateOfExpiry) forKey:@"vizDateOfExpiry"];
+        
+        if ([mrzIdentification vizDateOfIssue] && [mrzIdentification vizDateOfIssue].length > 0) {
+            [dictResult setValue:mrzIdentification.vizDateOfIssue forKey:@"vizDateOfIssue"];
+            [dictResult setValue:[ALPluginHelper stringForDate:mrzIdentification.vizDateOfIssueObject] forKey:@"vizDateOfIssueObject"];
+        }
+        [confidences setValue:@(mrzIdentification.fieldConfidences.vizDateOfIssue) forKey:@"vizDateOfIssue"];
+        
+        [dictResult setValue:[ALPluginHelper stringForDate:[scanResult.result dayOfBirthDateObject]] forKey:@"dateOfBirthObject"];
+        [dictResult setValue:[ALPluginHelper stringForDate:[scanResult.result dateOfExpiryObject]] forKey:@"dateOfExpiryObject"];
+        [dictResult setValue:confidences forKey:@"fieldConfidences"];
     } else if ([scanResult.result isKindOfClass:[ALDrivingLicenseIdentification class]]) {
-        dictResult = [[scanResult.result dictionaryWithValuesForKeys:@[@"documentNumber",
-                                                                       @"surNames",
-                                                                       @"givenNames",
-                                                                       @"dayOfBirth",
-                                                                       @"placeOfBirth",
-                                                                       @"issuingDate",
-                                                                       @"expirationDate",
-                                                                       @"authority",
-                                                                       @"categories",
-                                                                       @"drivingLicenseString"]] mutableCopy];
-        [dictResult setValue:[ALPluginHelper stringForDate:[scanResult.result issuingDateObject]] forKey:@"issuingDateObject"];
+        NSMutableArray<NSString *> *keys=[@[
+                                            @"surname",
+                                            @"givenNames",
+                                            @"dateOfBirth",
+                                            @"placeOfBirth",
+                                            @"dateOfIssue",
+                                            @"dateOfExpiry",
+                                            @"authority",
+                                            @"documentNumber",
+                                            @"categories",
+                                            @"drivingLicenseString"
+                                            ] mutableCopy];
+        dictResult = [[scanResult.result dictionaryWithValuesForKeys:keys] mutableCopy];
+        //we have field confidences for everything but drivingLicenseString
+        [keys removeObject:@"drivingLicenseString"];
+        [dictResult setValue:[[scanResult.result fieldConfidences] dictionaryWithValuesForKeys:keys] forKey:@"fieldConfidences"];
+        [dictResult setValue:[ALPluginHelper stringForDate:[scanResult.result dateOfBirthObject]] forKey:@"dateOfBirthObject"];
+        [dictResult setValue:[ALPluginHelper stringForDate:[scanResult.result dateOfIssueObject]] forKey:@"dateOfIssueObject"];
+        [dictResult setValue:[ALPluginHelper stringForDate:[scanResult.result dateOfExpiryObject]] forKey:@"dateOfExpiryObject"];
+        
     } else if ([scanResult.result isKindOfClass:[ALGermanIDFrontIdentification class]]) {
         ALGermanIDFrontIdentification *germanIDFrontIdentification = (ALGermanIDFrontIdentification *)scanResult.result;
-        dictResult = [[germanIDFrontIdentification dictionaryWithValuesForKeys:@[@"documentNumber",
-                                                                       @"surNames",
-                                                                       @"givenNames",
-                                                                       @"dayOfBirth",
-                                                                       @"placeOfBirth",
-                                                                       @"nationality",
-                                                                       @"cardAccessNumber",
-                                                                       @"expirationDate",
-                                                                       @"germanIdFrontString"]] mutableCopy];
+        NSMutableArray<NSString *> *keys=[@[
+                                            @"surname",
+                                            @"givenNames",
+                                            @"dateOfBirth",
+                                            @"nationality",
+                                            @"placeOfBirth",
+                                            @"dateOfExpiry",
+                                            @"documentNumber",
+                                            @"cardAccessNumber",
+                                            @"germanIdFrontString"
+                                            ] mutableCopy];
+        dictResult = [[germanIDFrontIdentification dictionaryWithValuesForKeys:keys] mutableCopy];
+        //we have field confidences for everything but germanIdFrontString
+        [keys removeObject:@"germanIdFrontString"];
+        [dictResult setValue:[[scanResult.result fieldConfidences] dictionaryWithValuesForKeys:keys] forKey:@"fieldConfidences"];
+        [dictResult setValue:[ALPluginHelper stringForDate:[scanResult.result dateOfBirthObject]] forKey:@"dateOfBirthObject"];
+        [dictResult setValue:[ALPluginHelper stringForDate:[scanResult.result dateOfExpiryObject]] forKey:@"dateOfExpiryObject"];
     }
-                
-    [dictResult setValue:[ALPluginHelper stringForDate:[scanResult.result dayOfBirthDateObject]] forKey:@"dayOfBirthObject"];
-    [dictResult setValue:[ALPluginHelper stringForDate:[scanResult.result expirationDateObject]] forKey:@"expirationDateObject"];
-                
+    
     [dictResult setValue:imagePath forKey:@"imagePath"];
-                
+    
+    NSString *fullImagePath = [ALPluginHelper saveImageToFileSystem:scanResult.fullImage compressionQuality:dividedCompRate];
+    [dictResult setValue:fullImagePath forKey:@"fullImagePath"];
+    
     [dictResult setValue:@(scanResult.confidence) forKey:@"confidence"];
     [dictResult setValue:[self stringForOutline:outline] forKey:@"outline"];
-                
+    
     return dictResult;
 }
-                
+
 + (NSDictionary *)dictionaryForOCRResult:(ALOCRResult *)scanResult
                         detectedBarcodes:(NSMutableArray<NSDictionary *> *)detectedBarcodes
                                  outline:(ALSquare *)outline
@@ -462,7 +518,9 @@
     
     [dictResult setValue:imagePath forKey:@"imagePath"];
     
-    [dictResult setValue:@(scanResult.confidence) forKey:@"confidence"];
+    NSString *fullImagePath = [ALPluginHelper saveImageToFileSystem:scanResult.fullImage compressionQuality:dividedCompRate];
+    [dictResult setValue:fullImagePath forKey:@"fullImagePath"];
+    
     [dictResult setValue:[ALPluginHelper stringForOutline:outline] forKey:@"outline"];
     
     if (detectedBarcodes && detectedBarcodes.count != 0) {
@@ -491,6 +549,9 @@
     
     [dictResult setValue:imagePath forKey:@"imagePath"];
     
+    NSString *fullImagePath = [ALPluginHelper saveImageToFileSystem:scanResult.fullImage compressionQuality:dividedCompRate];
+    [dictResult setValue:fullImagePath forKey:@"fullImagePath"];
+    
     [dictResult setValue:@(scanResult.confidence) forKey:@"confidence"];
     [dictResult setValue:[ALPluginHelper stringForOutline:outline] forKey:@"outline"];
     
@@ -512,6 +573,9 @@
     [dictResult setValue:[ALPluginHelper stringForOutline:outline] forKey:@"outline"];
     [dictResult setValue:@(scanResult.confidence) forKey:@"confidence"];
     [dictResult setValue:imagePath forKey:@"imagePath"];
+    
+    NSString *fullImagePath = [ALPluginHelper saveImageToFileSystem:scanResult.fullImage compressionQuality:dividedCompRate];
+    [dictResult setValue:fullImagePath forKey:@"fullImagePath"];
     
     if (detectedBarcodes && detectedBarcodes.count != 0) {
         [dictResult setObject:detectedBarcodes forKey:@"detectedBarcodes"];
@@ -543,10 +607,10 @@
     
     return dictResult;
 }
-                
-                
+
+
 #pragma mark - Date Parsing Utils
-                
+
 + (NSString *)stringForDate:(NSDate *)date {
     if (!date) {
         return nil;

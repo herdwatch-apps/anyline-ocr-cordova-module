@@ -10,6 +10,13 @@
     <content src="index.html" />
     <access origin="*" />
     <icon src="www/img/ic_launcher.png" />
+    <platform name="android">
+        <preference name="AndroidXEnabled" value="true" />
+        <preference name="GradlePluginGoogleServicesEnabled" value="true"/>
+        <preference name="GradlePluginGoogleServicesVersion" value="4.3.3" />
+        <preference name="intercom-android-push-type" value="FCM-WITHOUT-BUILD-PLUGIN"/>
+<!--        <resource-file src="res/build-extras.gradle" target="app/build-extras.gradle" />-->
+    </platform>
     <platform name="ios">
         <config-file parent="NFCReaderUsageDescription" target="*-Info.plist">
             <string>Please allow NFC access to read passports</string>

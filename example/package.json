@@ -6,7 +6,7 @@
   "scripts": {
     "cleanCordova": "rm -rf platforms && rm -rf plugins",
     "test-anyline22": "npm run cleanCordova && cordova plugin add io-anyline-cordova@22 && cordova platform add android && cordova build android --release",
-    "test-anyline25": "npm run cleanCordova && cordova plugin add io-anyline-cordova@25 && cordova platform add android && cordova build android --release",
+    "test-anyline25": "npm run cleanCordova && cordova plugin add ../plugin && cordova platform add android && cordova build android --release",
     "test": "echo \"Error: no test specified\" && exit 1",
     "reinstall": "cordova platform remove android && cordova plugin remove io-anyline-cordova && cordova platform add android@latest && cordova plugin add ../plugin",
     "reinstall-ios": "cordova platform remove ios && cordova plugin remove io-anyline-cordova && cordova platform add ios@latest && cordova plugin add ../plugin",
@@ -24,7 +24,7 @@
     "cordova-android": "^9.0.0",
     "cordova-plugin-firebasex": "11.0.3-cli",
     "cordova-plugin-intercom": "^9.2.1",
-    "io-anyline-cordova": "^22.0.0",
+    "io-anyline-cordova": "file:../plugin",
     "urbanairship-cordova": "^12.0.1",
     "xml-js": "^1.6.11"
   },

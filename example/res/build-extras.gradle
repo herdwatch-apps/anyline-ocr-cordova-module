@@ -1,0 +1,12 @@
+android {
+    dexOptions {
+       javaMaxHeapSize "8g"
+    }
+}
+
+dependencies{
+  implementation('io.anyline:anylinesdk:28') {
+      exclude group: 'com.google.firebase', module: 'firebase-ml-vision-face-model'
+      exclude group: 'com.google.firebase', module: 'firebase-ml-vision'
+  }
+}

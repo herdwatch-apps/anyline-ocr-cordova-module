@@ -27,6 +27,9 @@ android {
   packagingOptions {
     exclude 'META-INF/NOTICE'
     exclude 'META-INF/LICENSE'
+    aaptOptions {
+        ignoreAssetsPattern "module_energy:module_id:module_anyline_ocr:module_document:module_license_plate:module_tire"
+    }
   }
 
 }

@@ -30,12 +30,10 @@ import io.anyline.AnylineSDK;
 import io.anyline.plugin.ScanResult;
 import io.anyline.plugin.ScanResultListener;
 import io.anyline.plugin.barcode.Barcode;
+import io.anyline.plugin.barcode.BarcodeScanPlugin;
 import io.anyline.plugin.barcode.BarcodeScanResult;
 import io.anyline.plugin.barcode.BarcodeScanViewPlugin;
-import io.anyline.plugin.id.DrivingLicenseConfig;
-import io.anyline.plugin.id.DrivingLicenseIdentification;
-import io.anyline.plugin.id.GermanIdFrontConfig;
-import io.anyline.plugin.id.GermanIdFrontIdentification;
+import io.anyline.plugin.barcode.PDF417;
 import io.anyline.plugin.id.ID;
 import io.anyline.plugin.id.IdScanPlugin;
 import io.anyline.plugin.id.IdScanViewPlugin;
@@ -50,6 +48,8 @@ import io.anyline.plugin.meter.MeterScanResult;
 import io.anyline.plugin.meter.MeterScanViewPlugin;
 import io.anyline.plugin.ocr.OcrScanResult;
 import io.anyline.plugin.ocr.OcrScanViewPlugin;
+import io.anyline.plugin.tire.TireScanResult;
+import io.anyline.plugin.tire.TireScanViewPlugin;
 import io.anyline.view.AbstractBaseScanViewPlugin;
 import io.anyline.view.LicenseKeyExceptionListener;
 import io.anyline.view.ParallelScanViewComposite;
@@ -93,8 +93,6 @@ public class Anyline4Activity extends AnylineBaseActivity implements LicenseKeyE
         super.onResume();
         //start scanning
         anylineScanView.start();
-
-
     }
 
     @Override
@@ -210,27 +208,6 @@ public class Anyline4Activity extends AnylineBaseActivity implements LicenseKeyE
                                     } catch (JSONException e) {
                                         e.printStackTrace();
                                     }
-                                } else if (subResult.getResult() instanceof DrivingLicenseIdentification) {
-                                    JSONObject jsonIdResult = ((DrivingLicenseIdentification) subResult.getResult())
-                                            .toJSONObject();
-                                    try {
-                                        jsonIdResult = AnylinePluginHelper.jsonHelper(Anyline4Activity.this, subResult,
-                                                jsonIdResult);
-
-                                        jsonResult.put(subResult.getPluginId(), jsonIdResult);
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                    }
-                                } else if (subResult.getResult() instanceof GermanIdFrontIdentification) {
-                                    JSONObject jsonIdResult = ((GermanIdFrontIdentification) subResult.getResult()).toJSONObject();
-                                    try {
-                                        jsonIdResult = AnylinePluginHelper.jsonHelper(Anyline4Activity.this, subResult,
-                                                jsonIdResult);
-
-                                        jsonResult.put(subResult.getPluginId(), jsonIdResult);
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                    }
                                 } else if (subResult instanceof OcrScanResult) {
                                     JSONObject jsonOcrResult = new JSONObject();
                                     try {
@@ -281,11 +258,6 @@ public class Anyline4Activity extends AnylineBaseActivity implements LicenseKeyE
                         }
                     });
                 } else if (scanViewPlugin instanceof LicensePlateScanViewPlugin) {
-                    if (json.has("reportingEnabled")) {
-                        //scanViewPlugin.setReportingEnabled(json.optBoolean("reportingEnabled", true));
-                        (((LicensePlateScanViewPlugin) scanViewPlugin).getScanPlugin()).setReportingEnabled(
-                                json.optBoolean("reportingEnabled", true));
-                    }
                     scanViewPlugin.addScanResultListener(new ScanResultListener<LicensePlateScanResult>() {
                         @Override
                         public void onResult(LicensePlateScanResult licensePlateResult) {
@@ -346,47 +318,6 @@ public class Anyline4Activity extends AnylineBaseActivity implements LicenseKeyE
 
 
                         });
-                        //					} else if (((IdScanPlugin) scanViewPlugin.getScanPlugin()).getIdConfig() instanceof DrivingLicenseConfig) {
-                    } else if (((IdScanPlugin) ((IdScanViewPlugin) scanViewPlugin).getScanPlugin())
-                            .getIdConfig() instanceof DrivingLicenseConfig) {
-                        scanViewPlugin.addScanResultListener(new ScanResultListener<ScanResult<ID>>() {
-                            @Override
-                            public void onResult(ScanResult<ID> idScanResult) {
-                                JSONObject jsonResult = ((DrivingLicenseIdentification) idScanResult.getResult()).toJSONObject();
-
-                                try {
-                                    jsonResult = AnylinePluginHelper.jsonHelper(Anyline4Activity.this, idScanResult, jsonResult);
-                                } catch (Exception e) {
-                                    Log.e(TAG, "Exception is: ", e);
-
-                                }
-
-                                setResult(scanViewPlugin, jsonResult);
-
-                            }
-
-
-                        });
-                        //					} else if (((IdScanPlugin) scanViewPlugin.getScanPlugin()).getIdConfig() instanceof GermanIdFrontConfig) {
-                    } else if (((IdScanPlugin) ((IdScanViewPlugin) scanViewPlugin).getScanPlugin()).getIdConfig() instanceof GermanIdFrontConfig) {
-                        scanViewPlugin.addScanResultListener(new ScanResultListener<ScanResult<ID>>() {
-                            @Override
-                            public void onResult(ScanResult<ID> idScanResult) {
-                                JSONObject jsonResult = ((GermanIdFrontIdentification) idScanResult.getResult()).toJSONObject();
-
-                                try {
-                                    jsonResult = AnylinePluginHelper.jsonHelper(Anyline4Activity.this, idScanResult, jsonResult);
-                                } catch (Exception e) {
-                                    Log.e(TAG, "Exception is: ", e);
-
-                                }
-
-                                setResult(scanViewPlugin, jsonResult);
-
-                            }
-
-
-                        });
                     } else if (((IdScanPlugin) ((IdScanViewPlugin) scanViewPlugin).getScanPlugin()).getIdConfig() instanceof UniversalIdConfig) {
                         scanViewPlugin.addScanResultListener(new ScanResultListener<ScanResult<ID>>() {
                             @Override
@@ -408,11 +339,6 @@ public class Anyline4Activity extends AnylineBaseActivity implements LicenseKeyE
                         });
                     }
                 } else if (scanViewPlugin instanceof OcrScanViewPlugin) {
-                    if (json.has("reportingEnabled")) {
-                        //						scanViewPlugin.setReportingEnabled(json.optBoolean("reportingEnabled", true));
-                        (((OcrScanViewPlugin) scanViewPlugin).getScanPlugin()).setReportingEnabled(json.optBoolean("reportingEnabled", true));
-
-                    }
 
                     scanViewPlugin.addScanResultListener(new ScanResultListener<OcrScanResult>() {
                         @Override
@@ -431,8 +357,27 @@ public class Anyline4Activity extends AnylineBaseActivity implements LicenseKeyE
 
                     });
 
+                } else if (scanViewPlugin instanceof TireScanViewPlugin) {
+
+                    scanViewPlugin.addScanResultListener(new ScanResultListener<TireScanResult>() {
+                        @Override
+                        public void onResult(TireScanResult tireScanResult) {
+                            JSONObject jsonResult = new JSONObject();
+                            try {
+                                jsonResult.put("text", tireScanResult.getResult().trim());
+                                jsonResult = AnylinePluginHelper.jsonHelper(Anyline4Activity.this, tireScanResult, jsonResult);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            setResult(scanViewPlugin, jsonResult);
+                        }
+                    });
+
                 } else if (scanViewPlugin instanceof BarcodeScanViewPlugin) {
 
+                    if (shouldEnablePDF417(json)) {
+                        ((BarcodeScanPlugin) ((BarcodeScanViewPlugin) scanViewPlugin).getScanPlugin()).enablePDF417Parsing();
+                    }
                     scanViewPlugin.addScanResultListener(new ScanResultListener<BarcodeScanResult>() {
                         @Override
                         public void onResult(BarcodeScanResult barcodeScanResult) {
@@ -447,16 +392,18 @@ public class Anyline4Activity extends AnylineBaseActivity implements LicenseKeyE
                                         barcode.put("value", barcodeList.get(i).getValue());
                                         barcode.put("barcodeFormat", barcodeList.get(i).getBarcodeFormat());
 
+                                        PDF417 pdf417 = barcodeList.get(i).getParsedPDF417();
+
+                                        if(pdf417 != null) {
+                                            barcode.put("parsedPDF417", pdf417.toJSONObject());
+                                        }
+
                                         barcodeArray.put(barcode);
                                     }
                                     JSONObject finalObject = new JSONObject();
                                     finalObject.put("barcodes", barcodeArray);
                                     jsonResult = AnylinePluginHelper.jsonHelper(Anyline4Activity.this, barcodeScanResult, finalObject);
                                 }
-                                //else{
-                                //    jsonResult = AnylinePluginHelper.jsonHelper(Anyline4Activity.this, barcodeScanResult, barcodeList.get(0).toJSONObject());
-
-                               // }
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -471,10 +418,6 @@ public class Anyline4Activity extends AnylineBaseActivity implements LicenseKeyE
                 } else if (scanViewPlugin instanceof MeterScanViewPlugin) {
                     final JSONArray jsonArray = new JSONArray();
                     //boolean nativeBarcodeEnabled = false;
-                    if (json.has("reportingEnabled")) {
-                        //						scanViewPlugin.setReportingEnabled(json.optBoolean("reportingEnabled", true));
-                        (((MeterScanViewPlugin) scanViewPlugin).getScanPlugin()).setReportingEnabled(json.optBoolean("reportingEnabled", true));
-                    }
                     //					if (json.has("nativeBarcodeEnabled")) {
                     //						nativeBarcodeEnabled = json.getBoolean("nativeBarcodeEnabled");
                     //					}
@@ -524,6 +467,21 @@ public class Anyline4Activity extends AnylineBaseActivity implements LicenseKeyE
             finishWithError(Resources.getString(this, "error_invalid_json_data") + "\n" + e.getLocalizedMessage());
         }
 
+    }
+
+    private boolean shouldEnablePDF417(JSONObject jsonObject) {
+        JSONObject viewPlugin = jsonObject.optJSONObject("viewPlugin");
+
+        if (viewPlugin != null) {
+            JSONObject plugin = viewPlugin.optJSONObject("plugin");
+
+            if (plugin != null) {
+                JSONObject barcodePlugin = plugin.optJSONObject("barcodePlugin");
+                Log.e("yyyy", ""+barcodePlugin.optBoolean("enablePDF417Parsing"));
+                return barcodePlugin != null && barcodePlugin.optBoolean("enablePDF417Parsing");
+            }
+        }
+        return false;
     }
 
     //this method is used only for the meter scanning which contains radio buttons
@@ -602,7 +560,7 @@ public class Anyline4Activity extends AnylineBaseActivity implements LicenseKeyE
                     View button = group.findViewById(checkedId);
                     String mode = modes.get(group.indexOfChild(button));
                     ((MeterScanViewPlugin) scanViewPlugin).setScanMode(MeterScanMode.valueOf(mode));
-                    //anylineScanView.releaseCameraInBackground();
+
                     anylineScanView.stop();
                     try {
                         Thread.sleep(200);

@@ -15,7 +15,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ALPluginHelper : NSObject
 
-+ (NSString *)barcodeFormatFromString:(NSString *)barcodeFormat;
++ (ALBarcodeFormat)barcodeFormatFromString:(NSString *)barcodeFormat;
+
++ (NSString *)stringFromBarcodeFormat:(ALBarcodeFormat)barcodeFormat;
+
++ (NSDictionary<NSString *, NSNumber *> *)barcodesFormatDict;
 
 + (ALScanMode)scanModeFromString:(NSString *)scanMode;
 

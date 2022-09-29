@@ -187,7 +187,7 @@ public class AnylinePlugin extends CordovaPlugin implements ResultReporter.OnRes
         ResultReporter.setListener(null);
         Log.i(TAG, "onActivityResult: result code, request code: " + resultCode + "  " + requestCode);
         if (resultCode == RESULT_OK) {
-            //nothing todo, handeled with ResultReporter
+            //nothingtodo, handeled with ResultReporter
         } else if (resultCode == RESULT_CANCELED) {
             this.mCallbackContext.error("Canceled");
         } else if (resultCode == RESULT_ERROR) {

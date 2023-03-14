@@ -39,7 +39,7 @@ android {
         if (!anylineRetainAssetsPattern.empty) {
             println "Anyline: retain assets pattern --> $anylineRetainAssetsPattern"
             aaptOptions {
-                retainAssetsPattern "$anylineRetainAssetsPattern"
+                ignoreAssetsPattern "$anylineRetainAssetsPattern"
             }
         }
     }

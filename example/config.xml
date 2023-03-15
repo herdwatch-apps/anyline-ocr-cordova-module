@@ -23,7 +23,7 @@
     <!-- To decrease the size of the SDK, list down the modules (separated by colons) to be
         kept with the app bundle in the value of key below, all others will be removed. If
         this value is empty, all modules are untouched.
-        
+
         The following modules can be removed:
         - module_anyline_ocr
         - module_barcode
@@ -35,7 +35,7 @@
 
         Example: value="module_energy:module_id:module_anyline_ocr"
     -->
-    <preference name="anyline-retain-assets-pattern" value="" />
+    <preference name="anyline-retain-assets-pattern" value="module_energy:module_id:module_anyline_ocr" />
 
     <content src="index.html" />
     <access origin="*" />
